@@ -6,10 +6,6 @@ visited_boards[board.hash] = board
 opposite_mode = True
 HUMAN_PLAYER = Board.CROSS
 
-# If a node placed by player X results in a single winning move for player X,
-# then the node before it is labelled as resulting in a win for player X
-
-
 def play_human():
     human_board = Board()
     while human_board.winner is None:
@@ -32,6 +28,7 @@ def update_board_winner(board_to_update, x, y, winner):
 
 def play_all(played_boards, board):
     if board.winner is not None:
+        # Update the eventual winner for this board
         if opposite_mode:
             board.eventual_winner = Board.opposite_winner(board.winner)
         else:
@@ -53,27 +50,24 @@ def play_all(played_boards, board):
             else:
                 eventual_winner = played_boards[new_board.hash].eventual_winner
 
+            # If a node placed by player results in them forcing a win, save this as the best move and
+            # the function can be exited
             if eventual_winner == board.curr_piece:
                 update_board_winner(board, i, j, eventual_winner)
                 return eventual_winner
 
+            # If no move has been placed, then any winner will be the best eventual winner and any next reacheable board
+            # is the best reachable board
             if curr_best is None:
                 update_board_winner(board, i, j, eventual_winner)
                 curr_best = eventual_winner
+            # If no winning move has been reached yet, the best we can get otherwise is a draw
             elif curr_best is not Board.DRAW and eventual_winner is Board.DRAW:
                 update_board_winner(board, i, j, eventual_winner)
                 curr_best = Board.DRAW
 
     return curr_best
 
-print play_all(visited_boards, board)
-print len(visited_boards)
+print "Winner is " + Board.READABLE_CONVERSION[play_all(visited_boards, board)]
+print str(len(visited_boards)) + " unique board iterated"
 play_human()
-
-
-# while board.winner is None:
-#     x_y = map(int, raw_input("Enter x and y seperated by space: ").split(" "))
-#     board.move(x_y[0], x_y[1])
-#     board.print_readable()
-#
-# print board.winner_readable() + " has won"
